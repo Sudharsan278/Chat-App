@@ -5,21 +5,29 @@ import cloudinary from "../lib/cloudinary.js"
 
 export const signup = async (req,res) => {
 
-    const {name, email, password, gender} = req.body;
-    console.log(req.body)
+    const {fullName, email, password} = req.body;
+    // console.log(req.body)
     try {
         
-        if(!name || !name || !gender || !password){
+        
+        if(!fullName  || !email || !password){
+           
             return res.status(400).json({message : "Required credentials are not provided!"});
         }
 
         if(password.length < 6){
+          
             return res.status(400).json({message : "Password should contain atleast 6 characters"});
+        }
+
+        if(fullName.length < 3){
+            return res.status(400).json({message : "Name should contain atleast 3 characters"});
         }
 
         const user = await User.findOne({email});
 
         if(user){
+           
             return res.status(401).json({message : "User Already Exists!"});
         }
 
@@ -27,13 +35,14 @@ export const signup = async (req,res) => {
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const newUser = new User({
-            name,
+            fullName,
             email,
             password : hashedPassword,
-            gender,
+            
         });
 
         if(newUser){
+           
             //Generate Token for the user
             generateToken(newUser._id, res);
             await newUser.save();
@@ -104,10 +113,10 @@ export const updateProfile = async (req,res) => {
         }
     
         const uploadProfilePicture = cloudinary.uploader.upload(profilePic);
-        const updatedUser = await User.findByIdAndUpdate(userId, {profilePicture : (await uploadProfilePicture).secure_url}, {new : true}) 
+        const user = await User.findByIdAndUpdate(userId, {profilePic : (await uploadProfilePicture).secure_url}, {new : true}) 
         //profilePicture : uploadProfilePicture.secure_url
     
-        return res.status(200).json({message : "Profile Updated!", updatedUser});
+        return res.status(200).json({message : "Profile Updated!", user});
     } catch (error) {
         console.log("Error in UpdateProfile Controller", error.message);
         return res.status(500).json({message : "Internal Server Error!"});
