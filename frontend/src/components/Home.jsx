@@ -6,7 +6,7 @@ import Sidebar from './Sidebar.jsx';
 
 const Home = () => {
   
-  const {currentUser} = useChatStore();
+  const {selectedUser} = useChatStore();
   
   return (
     <div className="h-screen bg-base-200">
@@ -15,7 +15,7 @@ const Home = () => {
           <div className="flex h-full rounded-lg overflow-hidden">
             <Sidebar />
 
-            {currentUser ? <ChatContainer /> : <DefaultPage />}
+            {selectedUser ? <ChatContainer /> : <DefaultPage />}
           </div>
         </div>
       </div>
