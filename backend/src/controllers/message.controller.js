@@ -1,6 +1,7 @@
 import cloudinary from "../lib/cloudinary.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
+import mongoose from "mongoose";
 
 export const getSideBarUsers = async (req, res) => {
 
@@ -27,9 +28,11 @@ export const getMessagesBetweenUsers = async (req, res) => {
         const messages = await Message.find({
             $or : [
                 {senderId, receiverId},
-                {receiverId, senderId}
+                {senderId : receiverId, receiverId : senderId}
             ]
         })
+
+        // console.log(messages);
 
         return res.status(200).json({message : "Success" , messages});
     } catch (error) {
@@ -49,16 +52,15 @@ export const sendMessageToUser = async (req, res) => {
 
         let imageUrl;
         if(image){
-            const uploadedImage = cloudinary.uploader.upload(image);
-            imageUrl = (await uploadedImage).secure_url;
-            //response.secure_url 
+            const uploadedImage = await cloudinary.uploader.upload(image);
+            imageUrl = uploadedImage.secure_url;      
         }
 
         const newMessage = new Message ({
             senderId,
             receiverId,
             image : imageUrl,
-            text
+            message : text
         });
 
         await newMessage.save()
