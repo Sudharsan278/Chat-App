@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { useChatStore } from '../store/useChatStore.js'
 import ChatHeader from './ChatHeader.jsx';
 import ChatInput from './ChatInput.jsx'
@@ -8,12 +8,25 @@ import { formatTime } from '../utils/formatTime.js';
 
 const ChatContainer = () => {
 
-  const {messages, selectedUser, getConversation, isMessagesLoading} = useChatStore();
+  const {messages, selectedUser, getConversation, isMessagesLoading, listenerForMessages, removeListenerToMessages} = useChatStore();
   const {authUser} = useAuthStore();
+  const scrollToEndRef = useRef();
 
   useEffect(() => {
-    getConversation(selectedUser._id)
-  }, [selectedUser._id, getConversation]);
+    getConversation(selectedUser._id);
+
+    listenerForMessages();
+
+    return (
+      removeListenerToMessages
+    ) 
+  }, [selectedUser._id, getConversation, listenerForMessages, removeListenerToMessages]);
+
+  useEffect(() => {
+    if(messages && scrollToEndRef.current)
+      scrollToEndRef.current.scrollIntoView({behavior : "smooth"})
+  } , [messages])
+
 
   if(isMessagesLoading) {
     return (
@@ -38,6 +51,7 @@ const ChatContainer = () => {
           <div
             key={message._id}
             className={`chat ${message.senderId === authUser.user._id ? "chat-end" : "chat-start"}`}
+            ref = {scrollToEndRef}
           >
             <div className=" chat-image avatar">
               <div className="size-10 rounded-full border">

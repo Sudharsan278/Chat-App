@@ -1,7 +1,8 @@
 import cloudinary from "../lib/cloudinary.js";
+import { getReceiverSocketId } from "../lib/socket.io.js";
 import Message from "../models/message.model.js";
 import User from "../models/user.model.js";
-import mongoose from "mongoose";
+import { io } from "../lib/socket.io.js";
 
 export const getSideBarUsers = async (req, res) => {
 
@@ -65,7 +66,10 @@ export const sendMessageToUser = async (req, res) => {
 
         await newMessage.save()
 
-        //Socket.io comes here
+        const receiverSocketId = getReceiverSocketId(receiverId);
+
+        if(receiverSocketId) //User is online
+            io.to(receiverSocketId).emit("newMessage", newMessage);
 
         return res.status(201).json({message : "Success", newMessage});
     } catch (error) {

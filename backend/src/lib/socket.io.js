@@ -14,6 +14,10 @@ const io = new Server (server, {
 
 const onlineUsers = {};
 
+export function getReceiverSocketId (userId) {
+    return onlineUsers[userId];
+}
+
 io.on('connection', (socket) => {
     console.log("A client has been connected!", socket.id);
 
