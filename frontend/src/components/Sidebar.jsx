@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Users } from 'lucide-react';
 import { useChatStore } from '../store/useChatStore.js'
 import SkeletonForSideBar from './SkeletonForSideBar.jsx';
@@ -8,12 +8,14 @@ const Sidebar = () => {
 
   const {getUsers, selectedUser, setSelectedUser, isUsersLoading, users } = useChatStore();
   const {onlineUsers} = useAuthStore();
+  const [online, setOnline] = useState(false);
 
 
   useEffect(() => {
     getUsers();
   }, [getUsers]);
 
+  const filteredUsers = online ? users.filter((user) => onlineUsers.includes(user._id)) : users ;
 
   if(isUsersLoading){
     return <SkeletonForSideBar/>
@@ -28,11 +30,24 @@ const Sidebar = () => {
             <span className="font-medium hidden lg:block">Contacts</span>
         </div>
 
+        <div className="mt-3 hidden lg:flex items-center gap-2">
+          <label className="cursor-pointer flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={online}
+              onChange={(e) => setOnline(e.target.checked)}
+              className="checkbox checkbox-sm"
+            />
+            <span className="text-sm">Show online Users</span>
+          </label>
+          <span className="text-xs text-zinc-500">({onlineUsers.length - 1} online)</span>
+        </div>
       </div>
+      
 
       <div className="overflow-y-auto w-full py-3"> 
         {/* {console.log(users)} */}
-        {users.map((user) => (
+        {filteredUsers.map((user) => (
           <button 
             key={user._id}
             onClick={() => setSelectedUser(user)}
@@ -62,6 +77,9 @@ const Sidebar = () => {
         ))}
       </div>
 
+      {filteredUsers.length === 0 && (
+          <div className="text-center text-zinc-500 py-4">No online users</div>
+      )}
 
    </aside>
   )

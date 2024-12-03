@@ -1,12 +1,15 @@
 import React, {useState} from 'react'
 import { Camera, Mail, User } from "lucide-react";
 import { useAuthStore } from '../store/useAuthStore.js';
+import toast from 'react-hot-toast';
 
 
 const UserProfile = () => {
 
-  const { authUser, isUpdatingProfile, updateProfile } = useAuthStore();
+  const { authUser, isUpdatingProfile, updateProfile, updateUserName } = useAuthStore();
   const [selectedImg, setSelectedImg] = useState(null); 
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [updatedName, setUpdatedName] = useState("");
   
 
   const handleImageUpload = async (event) => {
@@ -25,6 +28,19 @@ const UserProfile = () => {
         await(updateProfile({profilePic : base64Image}));
       }
   };
+
+
+  const handleNameUpdate = async (event) => {
+   
+    event.preventDefault();
+
+    if(!updatedName || updatedName.trim().length < 3){
+      toast.error("Name should contain atleast 3 characters!");
+      return;
+    }
+    await updateUserName(updatedName);
+    setIsEditingName(false);
+  }
 
   return (
     <div className="h-screen pt-20">
@@ -70,23 +86,64 @@ const UserProfile = () => {
             </p>
           </div>
 
+
+
+
           <div className="space-y-6">
-            <div className="space-y-1.5">
-              <div className="text-sm text-zinc-400 flex items-center gap-2">
+            <div className="space-y-2">
+              <div className="text-sm text-secondary flex items-center gap-2 font-bold">
                 <User className="w-4 h-4" />
-                Full Name
+                  Name
               </div>
-              <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{authUser?.user.fullName}</p>
+              {isEditingName ? (
+                <div className="flex items-center gap-4">
+                  <input
+                    type="text"
+                    value={updatedName}
+                    onChange={(e) => setUpdatedName(e.target.value)}
+                    className="input input-bordered w-full placeholder:align-middle placeholder:leading-normal"
+                    placeholder="Harry Potter"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        handleNameUpdate(e);
+                      } else if (e.key === "Escape") {
+                        setIsEditingName(false);
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={handleNameUpdate}
+                    className="btn btn-success"
+                    disabled={isUpdatingProfile}
+                  >
+                    Save
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{authUser?.user.fullName}</p>
+                  <button
+                    onClick={() => setIsEditingName(true)}
+                    className="btn btn-primary"
+                  >
+                    Update Name
+                  </button>
+                </>
+              )}
             </div>
 
-            <div className="space-y-1.5">
-              <div className="text-sm text-zinc-400 flex items-center gap-2">
+            <div className="space-y-2">
+              <div className="text-sm text-secondary flex items-center gap-2 font-bold">
                 <Mail className="w-4 h-4" />
                 Email Address
               </div>
               <p className="px-4 py-2.5 bg-base-200 rounded-lg border">{authUser?.user.email}</p>
             </div>
           </div>
+
+
+
 
           <div className="mt-6 bg-base-300 rounded-xl p-6">
             <h2 className="text-lg font-medium  mb-4">Account Information</h2>

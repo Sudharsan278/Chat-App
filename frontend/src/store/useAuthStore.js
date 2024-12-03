@@ -11,6 +11,7 @@ export const useAuthStore = create((set, get) => ({
     isSigningUp : false,
     isLoggingIn : false,
     isUpdatingProfile : false,
+    isUpdatingName : false,
     onlineUsers : [],
     socket : null,
 
@@ -92,6 +93,23 @@ export const useAuthStore = create((set, get) => ({
             toast.error(error.response.data.message);
         }finally{
             set({isUpdatingProfile : false});
+        }
+    }, 
+
+    updateUserName : async (fullName) => {
+        
+        set({isUpdatingName : true});
+        try {
+            console.log(fullName);
+            const response = await axiosInstance.put("/auth/updatename", {fullName});
+            set({authUser : response.data});
+            toast.success("Name Updated Successfully!");
+
+        } catch (error) {
+            console.log("Error in updateUserName :- ", error.message);
+            // toast.error(response.data.error.message);
+        }finally{
+            set({isUpdatingName : false})
         }
     }, 
 
